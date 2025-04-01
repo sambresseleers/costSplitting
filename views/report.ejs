@@ -19,7 +19,10 @@
                         <span><%= expense.item %> - <%= expense.costFormatted %></span>
                         <span class="item-actions">
                             <a href="/expenses/<%= expense.id %>/edit">Edit</a>
-                            <form action="/expenses/<%= expense.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                            <form action="/mark-paid/item/<%= expense.id %>" method="POST" style="display: inline;">
+                                <button type="submit">Mark as Paid</button>
+                            </form>
+                            <form action="/expenses/<%= expense.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');" style="display: inline;">
                                 <button type="submit">Delete</button>
                             </form>
                         </span>

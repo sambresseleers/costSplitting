@@ -186,35 +186,32 @@ app.delete('/expenses/:id', async (req, res) => {
 });
 
 // POST /mark-paid/:person - Mark Person's Expenses as Paid
-app.post('/mark-paid/:person', async (req, res) => {
-    const personName = req.params.person;
+app.post('/mark-paid/item/:id', async (req, res) => {
+    const expenseId = req.params.id;
     const paidTimestamp = Date.now();
     const paidBatchId = `batch-${crypto.randomUUID()}`;
-    let itemsMarked = 0;
 
     try {
         let expenses = await readExpenses();
-        expenses = expenses.map(expense => {
-            if (expense.person === personName && expense.status === 'unpaid') {
-                itemsMarked++;
-                return {
-                    ...expense,
-                    status: 'paid',
-                    paidTimestamp: paidTimestamp,
-                    paidBatchId: paidBatchId,
-                };
-            }
-            return expense;
-        });
+        const expenseIndex = expenses.findIndex(e => e.id === expenseId);
 
-        await writeExpenses(expenses);
-
-        if (itemsMarked > 0) {
-            console.log(`Marked ${itemsMarked} items as paid for ${personName} in batch ${paidBatchId}`);
-        } else {
-            console.log(`No unpaid items found for ${personName} to mark as paid.`);
+        if (expenseIndex === -1) {
+            return res.status(404).send('Expense not found');
         }
 
+        if (expenses[expenseIndex].status === 'paid') {
+            return res.status(400).send('Item is already marked as paid.');
+        }
+
+        expenses[expenseIndex] = {
+            ...expenses[expenseIndex],
+            status: 'paid',
+            paidTimestamp: paidTimestamp,
+            paidBatchId: paidBatchId,
+        };
+
+        await writeExpenses(expenses);
+        console.log(`Marked item ${expenseId} as paid in batch ${paidBatchId}`);
         res.redirect('/report');
     } catch (error) {
         res.status(500).send('Error updating expense data.');
