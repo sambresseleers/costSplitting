@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+
+<h2>History - Paid Expenses</h2>
+
+<% if (historyBatches.length === 0) { %>
+    <p>No paid expense history found.</p>
+<% } else { %>
+    <% historyBatches.forEach(batch => { %>
+        <div class="person-section">
+             <div class="person-header">
+                <h3><%= batch.person %></h3>
+                 <span>Paid on: <%= new Date(batch.timestamp).toLocaleString('nl-BE') %></span> <%# Display payment date %>
+            </div>
+             <ul class="item-list">
+                <% batch.items.forEach(expense => { %>
+                     <li>
+                        <span><%= expense.item %> - <%= expense.costFormatted %></span>
+                         <%# No actions needed for history items in this spec %>
+                    </li>
+                <% }); %>
+            </ul>
+            <div class="total">Batch Total: <%= batch.totalFormatted %></div>
+        </div>
+    <% }); %>
+<% } %>
+
+<%- include('partials/footer') %>

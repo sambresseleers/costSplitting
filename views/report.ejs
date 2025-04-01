@@ -1,0 +1,34 @@
+<%- include('partials/header') %>
+
+<h2>Report - Unpaid Expenses</h2>
+
+<% if (Object.keys(reportData).length === 0) { %>
+    <p>No unpaid expenses found.</p>
+<% } else { %>
+    <% Object.entries(reportData).forEach(([person, data]) => { %>
+        <div class="person-section">
+            <div class="person-header">
+                <h3><%= person %></h3>
+                <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
+                    <button type="submit">Mark All as Paid</button>
+                </form>
+            </div>
+            <ul class="item-list">
+                <% data.items.forEach(expense => { %>
+                    <li>
+                        <span><%= expense.item %> - <%= expense.costFormatted %></span>
+                        <span class="item-actions">
+                            <a href="/expenses/<%= expense.id %>/edit">Edit</a>
+                            <form action="/expenses/<%= expense.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </span>
+                    </li>
+                <% }); %>
+            </ul>
+            <div class="total">Total Unpaid: <%= data.totalFormatted %></div>
+        </div>
+    <% }); %>
+<% } %>
+
+<%- include('partials/footer') %>
