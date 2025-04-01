@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs').promises; // Using promises for cleaner async operations
 
 const app = express();
-const port = 3000;
+const port = 3002;
 const dataFilePath = path.join(__dirname, 'data.json');
 
 // --- Helper Functions ---
