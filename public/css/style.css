@@ -1,0 +1,54 @@
+/* styles.css */
+
+.person-section {
+    margin-bottom: 20px;
+}
+
+.person-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.person-header h3 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.person-header form {
+    margin-left: 10px;
+}
+
+ul.expenses-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.expense-item form {
+    margin-left: 10px;
+}
+
+button {
+    padding: 5px 10px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button[type="submit"]:hover {
+    background-color: #45a049;
+}
