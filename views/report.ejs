@@ -2,36 +2,35 @@
 
 <h2>Report - Unpaid Expenses</h2>
 
-<% if (Object.keys(reportData).length === 0) { %>
-    <p>No unpaid expenses found.</p>
-<% } else { %>
-    <% Object.entries(reportData).forEach(([person, data]) => { %>
-        <div class="person-section">
-            <div class="person-header">
-                <h3><%= person %></h3>
-                <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
-                    <button type="submit">Mark All as Paid</button>
-                </form>
-            </div>
-            <ul class="item-list">
-                <% data.items.forEach(expense => { %>
-                    <li>
-                        <span><%= expense.item %> - <%= expense.costFormatted %></span>
-                        <span class="item-actions">
-                            <a href="/expenses/<%= expense.id %>/edit">Edit</a>
-                            <form action="/mark-paid/item/<%= expense.id %>" method="POST" style="display: inline;">
-                                <button type="submit">Mark as Paid</button>
-                            </form>
-                            <form action="/expenses/<%= expense.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');" style="display: inline;">
-                                <button type="submit">Delete</button>
-                            </form>
-                        </span>
-                    </li>
-                <% }); %>
-            </ul>
-            <div class="total">Total Unpaid: <%= data.totalFormatted %></div>
-        </div>
-    <% }); %>
-<% } %>
+<% Object.keys(groupedData).forEach(person => { %>
+    <div class="person-section">
+      <div class="person-header">
+        <h3><%= person %></h3>
+  
+        <!-- Mark all as paid -->
+        <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST"
+              onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
+          <button type="submit">Mark All as Paid</button>
+        </form>
+      </div>
+  
+      <!-- List items -->
+      <ul>
+        <% groupedData[person].forEach((item, index) => { %>
+          <li>
+            <strong><%= item.reason %></strong> - €<%= item.amount %>
+            <% if (!item.paid) { %>
+              <form action="/mark-paid-single/<%= index %>" method="POST" style="display:inline;">
+                <input type="hidden" name="person" value="<%= person %>">
+                <button type="submit">Mark as Paid</button>
+              </form>
+            <% } else { %>
+              <span style="color: green;">✓ Paid</span>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+  <% }) %>
 
 <%- include('partials/footer') %>
