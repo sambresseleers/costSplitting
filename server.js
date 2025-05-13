@@ -185,7 +185,7 @@ app.delete('/expenses/:id', async (req, res) => {
     }
 });
 
-// POST /mark-paid/:person - Mark Person's Expenses as Paid
+// POST /mark-paid/:person - Mark Person's Expense (1) as Paid
 app.post('/mark-paid/item/:id', async (req, res) => {
     const expenseId = req.params.id;
     const paidTimestamp = Date.now();
@@ -217,6 +217,52 @@ app.post('/mark-paid/item/:id', async (req, res) => {
         res.status(500).send('Error updating expense data.');
     }
 });
+
+// POST /mark-paid/:person - Mark Person's Expenses (all) as Paid
+app.post('/mark-paid/:username', (req, res) => {
+    const username = req.params.username;
+    const costsPath = path.join(__dirname, 'data', 'costs.json');
+    const historyPath = path.join(__dirname, 'data', 'history.json');
+  
+    // Read costs
+    fs.readFile(costsPath, 'utf8', (err, costData) => {
+      if (err) return res.status(500).send('Failed to read costs data');
+  
+      let costs = JSON.parse(costData);
+  
+      // Filter items to move
+      const itemsToMove = costs.filter(item => item.name === username && item.paid !== true);
+  
+      if (itemsToMove.length === 0) {
+        return res.status(404).send(`No unpaid items found for ${username}`);
+      }
+  
+      // Set paid = true
+      const updatedItems = itemsToMove.map(item => ({ ...item, paid: true }));
+  
+      // Remove from current costs
+      costs = costs.filter(item => !(item.name === username && item.paid !== true));
+  
+      // Read and update history
+      fs.readFile(historyPath, 'utf8', (err, historyData) => {
+        let history = [];
+        if (!err) history = JSON.parse(historyData);
+  
+        const updatedHistory = [...history, ...updatedItems];
+  
+        // Write updated files
+        fs.writeFile(costsPath, JSON.stringify(costs, null, 2), 'utf8', err => {
+          if (err) return res.status(500).send('Failed to write updated costs');
+  
+          fs.writeFile(historyPath, JSON.stringify(updatedHistory, null, 2), 'utf8', err => {
+            if (err) return res.status(500).send('Failed to update history');
+  
+            res.redirect('/report'); // Or send a success message
+          });
+        });
+      });
+    });
+  });
 
 // GET /history - History Page (Paid Expenses)
 app.get('/history', async (req, res) => {
