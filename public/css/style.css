@@ -43,7 +43,7 @@ button {
 }
 
 button[type="submit"] {
-    background-color: #4CAF50;
+    background-color: #4b4e4b;
     color: white;
     border: none;
     border-radius: 5px;
