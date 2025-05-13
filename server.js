@@ -90,34 +90,40 @@ app.post('/expenses', async (req, res) => {
     }
 });
 
-// GET /report - Report Page (Unpaid Expenses)
-app.get('/report', async (req, res) => {
+// GET /history - History Page (Paid Expenses)
+app.get('/history', async (req, res) => {
     try {
         const expenses = await readExpenses();
-        const unpaidExpenses = expenses.filter(e => e.status === 'unpaid');
-        const reportData = {};
+        const paidExpenses = expenses.filter(e => e.status === 'paid');
+        const historyBatches = {};
 
-        unpaidExpenses.forEach(expense => {
-            if (!reportData[expense.person]) {
-                reportData[expense.person] = { items: [], total: 0 };
+        paidExpenses.forEach(expense => {
+            if (!expense.paidBatchId) return;
+
+            if (!historyBatches[expense.paidBatchId]) {
+                historyBatches[expense.paidBatchId] = {
+                    person: expense.person,
+                    timestamp: expense.paidTimestamp,
+                    batchId: expense.paidBatchId,
+                    items: [],
+                    total: 0,
+                };
             }
-            reportData[expense.person].items.push(expense);
-            reportData[expense.person].total += expense.cost;
-        });
-
-        Object.values(reportData).forEach(personData => {
-            personData.items.sort((a, b) => a.addedTimestamp - b.addedTimestamp);
-            personData.totalFormatted = formatCurrency(personData.total);
-        });
-
-        unpaidExpenses.forEach(expense => {
             expense.costFormatted = formatCurrency(expense.cost);
+            historyBatches[expense.paidBatchId].items.push(expense);
+            historyBatches[expense.paidBatchId].total += expense.cost;
         });
 
-        // Pass the formatCurrency function along with reportData
-        res.render('report', { reportData, formatCurrency });
+        const sortedHistory = Object.values(historyBatches).sort((a, b) => b.timestamp - a.timestamp);
+
+        sortedHistory.forEach(batch => {
+            batch.totalFormatted = formatCurrency(batch.total);
+            batch.items.sort((a, b) => a.addedTimestamp - b.addedTimestamp);
+        });
+
+        res.render('history', { historyBatches: sortedHistory });
     } catch (error) {
-        res.status(500).send('Error reading expense data for report.');
+        res.status(500).send('Error reading expense history.');
     }
 });
 
