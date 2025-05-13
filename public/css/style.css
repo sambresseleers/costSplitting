@@ -1,64 +1,75 @@
 /* styles.css */
 
+/* Body and general styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 20px;
+    color: #333;
+}
+
 .person-section {
-    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 20px auto;
+    padding: 20px;
+    width: 80%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .person-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 .person-header h3 {
-    margin: 0;
     font-size: 1.5em;
+    margin: 0;
 }
 
-.person-header form {
-    margin-left: 10px;
-}
-
-ul.expenses-list {
-    list-style-type: none;
-    padding: 0;
-}
-
-.expense-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 5px 0;
-}
-
-.expense-item form {
-    margin-left: 10px;
-}
-
-button {
+form button {
     padding: 5px 10px;
-    font-size: 1em;
-    cursor: pointer;
-}
-
-button[type="submit"] {
-    background-color: #4b4e4b;
+    background-color: #5bc0de;
     color: white;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
 }
 
-button[type="submit"]:hover {
-    background-color: #45a049;
+form button:hover {
+    background-color: #31b0d5;
 }
 
-/* Add some margin between buttons */
+/* Expense list styles */
+.expenses-list {
+    list-style: none;
+    padding-left: 0;
+}
+
 .expense-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 5px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Container for buttons to align them horizontally */
+.button-container {
+    display: flex;
+    gap: 10px; /* Add some space between buttons */
 }
 
 /* Style for the Edit button */
@@ -69,7 +80,6 @@ button[type="submit"]:hover {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-right: 10px;
 }
 
 .edit-btn:hover {
@@ -88,4 +98,24 @@ button[type="submit"]:hover {
 
 .delete-btn:hover {
     background-color: #c9302c;
+}
+
+/* Style for the Mark as Paid button */
+button[type="submit"]:not(.edit-btn):not(.delete-btn) {
+    padding: 5px 10px;
+    background-color: #5bc0de;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button[type="submit"]:not(.edit-btn):not(.delete-btn):hover {
+    background-color: #31b0d5;
+}
+
+/* Formatting the total */
+.person-section div {
+    font-weight: bold;
+    margin-top: 10px;
 }

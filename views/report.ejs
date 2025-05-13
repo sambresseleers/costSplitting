@@ -19,21 +19,24 @@
       <% reportData[person].items.forEach(item => { %>
         <li class="expense-item">
           <span><%= item.item %> - <%= formatCurrency(item.cost) %></span>
-          
-          <!-- Edit Button -->
-          <a href="/expenses/<%= encodeURIComponent(item.id) %>/edit">
-            <button class="edit-btn">Edit</button>
-          </a>
 
-          <!-- Delete Button -->
-          <form action="/expenses/<%= encodeURIComponent(item.id) %>?_method=DELETE" method="POST" style="display:inline;">
-            <button class="delete-btn" type="submit">Delete</button>
-          </form>
+          <!-- Buttons Container -->
+          <div class="button-container">
+            <!-- Edit Button -->
+            <a href="/expenses/<%= encodeURIComponent(item.id) %>/edit">
+              <button class="edit-btn">Edit</button>
+            </a>
 
-          <!-- Mark as Paid Button -->
-          <form action="/mark-paid/item/<%= encodeURIComponent(item.id) %>" method="POST" style="display:inline;">
-            <button type="submit">Mark as Paid</button>
-          </form>
+            <!-- Delete Button -->
+            <form action="/expenses/<%= encodeURIComponent(item.id) %>?_method=DELETE" method="POST" style="display:inline;">
+              <button class="delete-btn" type="submit">Delete</button>
+            </form>
+
+            <!-- Mark as Paid Button -->
+            <form action="/mark-paid/item/<%= encodeURIComponent(item.id) %>" method="POST" style="display:inline;">
+              <button type="submit">Mark as Paid</button>
+            </form>
+          </div>
         </li>
       <% }) %>
     </ul>
