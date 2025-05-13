@@ -120,184 +120,34 @@ app.get('/report', async (req, res) => {
     }
 });
 
-// GET /expenses/:id/edit - Show Edit Form
-app.get('/expenses/:id/edit', async (req, res) => {
-    try {
-        const expenses = await readExpenses();
-        const expense = expenses.find(e => e.id === req.params.id);
-        if (!expense) {
-            return res.status(404).send('Expense not found');
-        }
-        if (expense.status === 'paid') {
-            return res.status(400).send('Cannot edit already paid expenses.');
-        }
-        res.render('edit', { expense });
-    } catch (error) {
-        res.status(500).send('Error reading expense data for edit.');
-    }
-});
-
-// PUT /expenses/:id - Update Expense
-app.put('/expenses/:id', async (req, res) => {
-    const { person, item, cost } = req.body;
-
-    try {
-        let expenses = await readExpenses();
-        const expenseIndex = expenses.findIndex(e => e.id === req.params.id);
-
-        if (expenseIndex === -1) {
-            return res.status(404).send('Expense not found');
-        }
-
-        if (expenses[expenseIndex].status === 'paid') {
-            return res.status(400).send('Cannot edit already paid expenses.');
-        }
-
-        expenses[expenseIndex] = {
-            ...expenses[expenseIndex],
-            person: person.trim(),
-            item: item.trim(),
-            cost: parseFloat(cost),
-        };
-
-        await writeExpenses(expenses);
-        res.redirect('/report');
-    } catch (error) {
-        res.status(500).send('Error updating expense data.');
-    }
-});
-
-// DELETE /expenses/:id - Delete Expense
-app.delete('/expenses/:id', async (req, res) => {
-    try {
-        let expenses = await readExpenses();
-        const initialLength = expenses.length;
-        expenses = expenses.filter(e => e.id !== req.params.id);
-
-        if (expenses.length === initialLength) {
-            return res.status(404).send('Expense not found');
-        }
-
-        await writeExpenses(expenses);
-        res.redirect('/report');
-    } catch (error) {
-        res.status(500).send('Error deleting expense data.');
-    }
-});
-
-// POST /mark-paid/:person - Mark Person's Expense (1) as Paid
-app.post('/mark-paid/item/:id', async (req, res) => {
-    const expenseId = req.params.id;
-    const paidTimestamp = Date.now();
-    const paidBatchId = `batch-${crypto.randomUUID()}`;
-
-    try {
-        let expenses = await readExpenses();
-        const expenseIndex = expenses.findIndex(e => e.id === expenseId);
-
-        if (expenseIndex === -1) {
-            return res.status(404).send('Expense not found');
-        }
-
-        if (expenses[expenseIndex].status === 'paid') {
-            return res.status(400).send('Item is already marked as paid.');
-        }
-
-        expenses[expenseIndex] = {
-            ...expenses[expenseIndex],
-            status: 'paid',
-            paidTimestamp: paidTimestamp,
-            paidBatchId: paidBatchId,
-        };
-
-        await writeExpenses(expenses);
-        console.log(`Marked item ${expenseId} as paid in batch ${paidBatchId}`);
-        res.redirect('/report');
-    } catch (error) {
-        res.status(500).send('Error updating expense data.');
-    }
-});
-
 // POST /mark-paid/:person - Mark Person's Expenses (all) as Paid
-app.post('/mark-paid/:username', (req, res) => {
+app.post('/mark-paid/:username', async (req, res) => {
     const username = req.params.username;
-    const costsPath = path.join(__dirname, 'data', 'data.json');
-    const historyPath = path.join(__dirname, 'data', 'history.json');
   
-    // Read costs
-    fs.readFile(costsPath, 'utf8', (err, costData) => {
-      if (err) return res.status(500).send('Failed to read costs data');
-  
-      let costs = JSON.parse(costData);
-  
-      // Filter items to move
-      const itemsToMove = costs.filter(item => item.name === username && item.paid !== true);
-  
-      if (itemsToMove.length === 0) {
-        return res.status(404).send(`No unpaid items found for ${username}`);
-      }
-  
-      // Set paid = true
-      const updatedItems = itemsToMove.map(item => ({ ...item, paid: true }));
-  
-      // Remove from current costs
-      costs = costs.filter(item => !(item.name === username && item.paid !== true));
-  
-      // Read and update history
-      fs.readFile(historyPath, 'utf8', (err, historyData) => {
-        let history = [];
-        if (!err) history = JSON.parse(historyData);
-  
-        const updatedHistory = [...history, ...updatedItems];
-  
-        // Write updated files
-        fs.writeFile(costsPath, JSON.stringify(costs, null, 2), 'utf8', err => {
-          if (err) return res.status(500).send('Failed to write updated costs');
-  
-          fs.writeFile(historyPath, JSON.stringify(updatedHistory, null, 2), 'utf8', err => {
-            if (err) return res.status(500).send('Failed to update history');
-  
-            res.redirect('/report'); // Or send a success message
-          });
-        });
-      });
-    });
-  });
-
-// GET /history - History Page (Paid Expenses)
-app.get('/history', async (req, res) => {
     try {
         const expenses = await readExpenses();
-        const paidExpenses = expenses.filter(e => e.status === 'paid');
-        const historyBatches = {};
+        const itemsToMarkAsPaid = expenses.filter(item => item.person === username && item.status !== 'paid');
 
-        paidExpenses.forEach(expense => {
-            if (!expense.paidBatchId) return;
+        if (itemsToMarkAsPaid.length === 0) {
+            return res.status(404).send(`No unpaid items found for ${username}`);
+        }
 
-            if (!historyBatches[expense.paidBatchId]) {
-                historyBatches[expense.paidBatchId] = {
-                    person: expense.person,
-                    timestamp: expense.paidTimestamp,
-                    batchId: expense.paidBatchId,
-                    items: [],
-                    total: 0,
-                };
-            }
-            expense.costFormatted = formatCurrency(expense.cost);
-            historyBatches[expense.paidBatchId].items.push(expense);
-            historyBatches[expense.paidBatchId].total += expense.cost;
-        });
+        // Update all found items to 'paid'
+        const updatedItems = itemsToMarkAsPaid.map(item => ({
+            ...item,
+            status: 'paid',
+            paidTimestamp: Date.now(),
+            paidBatchId: `batch-${crypto.randomUUID()}`
+        }));
 
-        const sortedHistory = Object.values(historyBatches).sort((a, b) => b.timestamp - a.timestamp);
+        // Filter out unpaid items from the expenses list and add the updated items
+        const updatedExpenses = expenses.filter(item => !(item.person === username && item.status !== 'paid')).concat(updatedItems);
 
-        sortedHistory.forEach(batch => {
-            batch.totalFormatted = formatCurrency(batch.total);
-            batch.items.sort((a, b) => a.addedTimestamp - b.addedTimestamp);
-        });
+        await writeExpenses(updatedExpenses);
 
-        res.render('history', { historyBatches: sortedHistory });
+        res.redirect('/report');
     } catch (error) {
-        res.status(500).send('Error reading expense history.');
+        res.status(500).send('Error marking expenses as paid.');
     }
 });
 
