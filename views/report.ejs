@@ -4,33 +4,28 @@
 
 <% Object.keys(reportData).forEach(person => { %>
     <div class="person-section">
-      <div class="person-header">
-        <h3><%= person %></h3>
-  
-        <!-- Mark all as paid -->
-        <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST"
-              onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
-          <button type="submit">Mark All as Paid</button>
-        </form>
-      </div>
-  
-      <!-- List items -->
-      <ul>
-        <% groupedData[person].forEach((item, index) => { %>
-          <li>
-            <strong><%= item.reason %></strong> - €<%= item.amount %>
-            <% if (!item.paid) { %>
-              <form action="/mark-paid-single/<%= index %>" method="POST" style="display:inline;">
-                <input type="hidden" name="person" value="<%= person %>">
-                <button type="submit">Mark as Paid</button>
-              </form>
-            <% } else { %>
-              <span style="color: green;">✓ Paid</span>
-            <% } %>
-          </li>
-        <% }) %>
-      </ul>
+        <div class="person-header">
+            <h3><%= person %></h3>
+            <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
+                <button type="submit">Mark All as Paid</button>
+            </form>
+        </div>
+        <div class="person-items">
+            <ul>
+                <% reportData[person].items.forEach(item => { %>
+                    <li>
+                        <%= item.item %> - <%= formatCurrency(item.cost) %>
+                        <form action="/mark-paid/item/<%= encodeURIComponent(item.id) %>" method="POST" style="display:inline;">
+                            <button type="submit">Mark as Paid</button>
+                        </form>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+        <div class="person-total">
+            <strong>Total: <%= reportData[person].totalFormatted %></strong>
+        </div>
     </div>
-  <% }) %>
+<% }); %>
 
 <%- include('partials/footer') %>
