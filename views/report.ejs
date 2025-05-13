@@ -9,7 +9,7 @@
         <div class="person-section">
             <div class="person-header">
                 <h3><%= person %></h3>
-                <form action="/mark-paid/<%= encodeURIComponent(user.name) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
+                <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
                     <button type="submit">Mark All as Paid</button>
                 </form>
             </div>
