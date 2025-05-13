@@ -3,29 +3,26 @@
 <h2>Report - Unpaid Expenses</h2>
 
 <% Object.keys(reportData).forEach(person => { %>
-    <div class="person-section">
-        <div class="person-header">
-            <h3><%= person %></h3>
-            <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
-                <button type="submit">Mark All as Paid</button>
-            </form>
-        </div>
-        <div class="person-items">
-            <ul>
-                <% reportData[person].items.forEach(item => { %>
-                    <li>
-                        <%= item.item %> - <%= formatCurrency(item.cost) %>
-                        <form action="/mark-paid/item/<%= encodeURIComponent(item.id) %>" method="POST" style="display:inline;">
-                            <button type="submit">Mark as Paid</button>
-                        </form>
-                    </li>
-                <% }); %>
-            </ul>
-        </div>
-        <div class="person-total">
-            <strong>Total: <%= reportData[person].totalFormatted %></strong>
-        </div>
+  <div class="person-section">
+    <div class="person-header">
+      <h3><%= person %></h3>
+      <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST" onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
+        <button type="submit">Mark All as Paid</button>
+      </form>
     </div>
-<% }); %>
+
+    <ul class="expenses-list">
+      <% reportData[person].items.forEach(item => { %>
+        <li class="expense-item">
+          <span><%= item.item %> - <%= formatCurrency(item.cost) %></span>
+          <form action="/mark-paid/item/<%= encodeURIComponent(item.id) %>" method="POST" style="display:inline;">
+            <button type="submit">Mark as Paid</button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+    <div><strong>Total: </strong><%= reportData[person].totalFormatted %></div>
+  </div>
+<% }) %>
 
 <%- include('partials/footer') %>
