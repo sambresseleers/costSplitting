@@ -221,7 +221,7 @@ app.post('/mark-paid/item/:id', async (req, res) => {
 // POST /mark-paid/:person - Mark Person's Expenses (all) as Paid
 app.post('/mark-paid/:username', (req, res) => {
     const username = req.params.username;
-    const costsPath = path.join(__dirname, 'data', 'costs.json');
+    const costsPath = path.join(__dirname, 'data', 'data.json');
     const historyPath = path.join(__dirname, 'data', 'history.json');
   
     // Read costs
