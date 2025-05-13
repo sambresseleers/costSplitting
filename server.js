@@ -90,6 +90,68 @@ app.post('/expenses', async (req, res) => {
     }
 });
 
+// GET /report - Report Page (Unpaid Expenses)
+app.get('/report', async (req, res) => {
+    try {
+        const expenses = await readExpenses();
+        const unpaidExpenses = expenses.filter(e => e.status === 'unpaid');
+        const reportData = {};
+
+        unpaidExpenses.forEach(expense => {
+            if (!reportData[expense.person]) {
+                reportData[expense.person] = { items: [], total: 0 };
+            }
+            reportData[expense.person].items.push(expense);
+            reportData[expense.person].total += expense.cost;
+        });
+
+        Object.values(reportData).forEach(personData => {
+            personData.items.sort((a, b) => a.addedTimestamp - b.addedTimestamp);
+            personData.totalFormatted = formatCurrency(personData.total);
+        });
+
+        unpaidExpenses.forEach(expense => {
+            expense.costFormatted = formatCurrency(expense.cost);
+        });
+
+        // Pass the formatCurrency function along with reportData
+        res.render('report', { reportData, formatCurrency });
+    } catch (error) {
+        res.status(500).send('Error reading expense data for report.');
+    }
+});
+
+// POST /mark-paid/:person - Mark Person's Expenses (all) as Paid
+app.post('/mark-paid/:username', async (req, res) => {
+    const username = req.params.username;
+  
+    try {
+        const expenses = await readExpenses();
+        const itemsToMarkAsPaid = expenses.filter(item => item.person === username && item.status !== 'paid');
+
+        if (itemsToMarkAsPaid.length === 0) {
+            return res.status(404).send(`No unpaid items found for ${username}`);
+        }
+
+        // Update all found items to 'paid'
+        const updatedItems = itemsToMarkAsPaid.map(item => ({
+            ...item,
+            status: 'paid',
+            paidTimestamp: Date.now(),
+            paidBatchId: `batch-${crypto.randomUUID()}`
+        }));
+
+        // Filter out unpaid items from the expenses list and add the updated items
+        const updatedExpenses = expenses.filter(item => !(item.person === username && item.status !== 'paid')).concat(updatedItems);
+
+        await writeExpenses(updatedExpenses);
+
+        res.redirect('/report');
+    } catch (error) {
+        res.status(500).send('Error marking expenses as paid.');
+    }
+});
+
 // GET /history - History Page (Paid Expenses)
 app.get('/history', async (req, res) => {
     try {
@@ -124,37 +186,6 @@ app.get('/history', async (req, res) => {
         res.render('history', { historyBatches: sortedHistory });
     } catch (error) {
         res.status(500).send('Error reading expense history.');
-    }
-});
-
-// POST /mark-paid/:person - Mark Person's Expenses (all) as Paid
-app.post('/mark-paid/:username', async (req, res) => {
-    const username = req.params.username;
-  
-    try {
-        const expenses = await readExpenses();
-        const itemsToMarkAsPaid = expenses.filter(item => item.person === username && item.status !== 'paid');
-
-        if (itemsToMarkAsPaid.length === 0) {
-            return res.status(404).send(`No unpaid items found for ${username}`);
-        }
-
-        // Update all found items to 'paid'
-        const updatedItems = itemsToMarkAsPaid.map(item => ({
-            ...item,
-            status: 'paid',
-            paidTimestamp: Date.now(),
-            paidBatchId: `batch-${crypto.randomUUID()}`
-        }));
-
-        // Filter out unpaid items from the expenses list and add the updated items
-        const updatedExpenses = expenses.filter(item => !(item.person === username && item.status !== 'paid')).concat(updatedItems);
-
-        await writeExpenses(updatedExpenses);
-
-        res.redirect('/report');
-    } catch (error) {
-        res.status(500).send('Error marking expenses as paid.');
     }
 });
 
