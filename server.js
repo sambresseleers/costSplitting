@@ -114,7 +114,8 @@ app.get('/report', async (req, res) => {
             expense.costFormatted = formatCurrency(expense.cost);
         });
 
-        res.render('report', { reportData });
+        // Pass the formatCurrency function along with reportData
+        res.render('report', { reportData, formatCurrency });
     } catch (error) {
         res.status(500).send('Error reading expense data for report.');
     }
