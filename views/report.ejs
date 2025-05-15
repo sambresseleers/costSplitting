@@ -29,17 +29,17 @@
             <div class="button-container">
               <!-- Edit Button -->
               <form action="/expenses/<%= item.id %>/edit" method="GET" style="display:inline;">
-                <button type="submit" class="edit-btn">Edit</button>
+                <button type="submit">Edit</button>
               </form>
 
               <!-- Delete Button -->
               <form action="/expenses/<%= item.id %>" method="POST" style="display:inline;">
                 <input type="hidden" name="_method" value="DELETE">
-                <button type="submit" class="delete-btn">Delete</button>
+                <button type="submit">Delete</button>
               </form>
 
               <!-- Mark as Paid Button -->
-              <form action="/mark-paid/item/<%= encodeURIComponent(item.id) %>" method="POST" style="display:inline;">
+              <form action="/mark-paid/item/<%= item.id %>" method="POST" style="display:inline;">
                 <button type="submit">Mark as Paid</button>
               </form>
             </div>

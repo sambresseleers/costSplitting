@@ -123,10 +123,10 @@ app.get('/report', async (req, res) => {
     }
 });
 
-// POST /mark-paid/:person - Mark Person's Expenses (all) as Paid
+// POST /mark-paid/:username - Mark Person's Expenses (all) as Paid
 app.post('/mark-paid/:username', async (req, res) => {
     const username = req.params.username;
-  
+
     try {
         const expenses = await readExpenses();
         const itemsToMarkAsPaid = expenses.filter(item => item.person === username && item.status !== 'paid');
@@ -151,6 +151,42 @@ app.post('/mark-paid/:username', async (req, res) => {
         res.redirect('/report');
     } catch (error) {
         res.status(500).send('Error marking expenses as paid.');
+    }
+});
+
+// POST /expenses/:id/toggle-paid - Toggle paid/unpaid for a single expense
+app.post('/expenses/:id/toggle-paid', async (req, res) => {
+    const expenseId = req.params.id;
+
+    try {
+        const expenses = await readExpenses();
+        const expenseIndex = expenses.findIndex(e => e.id === expenseId);
+
+        if (expenseIndex === -1) {
+            return res.status(404).send('Expense not found.');
+        }
+
+        const expense = expenses[expenseIndex];
+        if (expense.status === 'paid') {
+            expenses[expenseIndex] = {
+                ...expense,
+                status: 'unpaid',
+                paidTimestamp: null,
+                paidBatchId: null,
+            };
+        } else {
+            expenses[expenseIndex] = {
+                ...expense,
+                status: 'paid',
+                paidTimestamp: Date.now(),
+                paidBatchId: `batch-${crypto.randomUUID()}`,
+            };
+        }
+
+        await writeExpenses(expenses);
+        res.redirect('/report');
+    } catch (error) {
+        res.status(500).send('Error toggling paid status.');
     }
 });
 
@@ -191,17 +227,74 @@ app.get('/history', async (req, res) => {
     }
 });
 
-// Delete expense
+// DELETE /expenses/:id - Delete expense
 app.delete('/expenses/:id', async (req, res) => {
-  const expenseId = req.params.id;
-  // Your logic to delete the expense
-  res.redirect('/report');
+    const expenseId = req.params.id;
+
+    try {
+        const expenses = await readExpenses();
+        const filteredExpenses = expenses.filter(e => e.id !== expenseId);
+
+        if (filteredExpenses.length === expenses.length) {
+            return res.status(404).send('Expense not found.');
+        }
+
+        await writeExpenses(filteredExpenses);
+        res.redirect('/report');
+    } catch (error) {
+        res.status(500).send('Error deleting expense.');
+    }
 });
 
-// Edit expense form
+// GET /expenses/:id/edit - Edit expense form
 app.get('/expenses/:id/edit', async (req, res) => {
-  const expenseId = req.params.id;
-  // Your logic to retrieve and render the edit form
+    const expenseId = req.params.id;
+
+    try {
+        const expenses = await readExpenses();
+        const expense = expenses.find(e => e.id === expenseId);
+
+        if (!expense) {
+            return res.status(404).send('Expense not found.');
+        }
+
+        res.render('edit', { expense });
+    } catch (error) {
+        res.status(500).send('Error loading expense for editing.');
+    }
+});
+
+// POST /expenses/:id - Update expense
+app.post('/expenses/:id', async (req, res) => {
+    const expenseId = req.params.id;
+    const { person, item, cost } = req.body;
+
+    // Basic Validation
+    if (!person || !item || !cost || isNaN(parseFloat(cost))) {
+        console.error("Validation failed:", req.body);
+        return res.redirect(`/expenses/${expenseId}/edit?error=Invalid input`);
+    }
+
+    try {
+        const expenses = await readExpenses();
+        const expenseIndex = expenses.findIndex(e => e.id === expenseId);
+
+        if (expenseIndex === -1) {
+            return res.status(404).send('Expense not found.');
+        }
+
+        expenses[expenseIndex] = {
+            ...expenses[expenseIndex],
+            person: person.trim(),
+            item: item.trim(),
+            cost: parseFloat(cost),
+        };
+
+        await writeExpenses(expenses);
+        res.redirect('/report');
+    } catch (error) {
+        res.status(500).send('Error updating expense.');
+    }
 });
 
 // --- Start Server ---
