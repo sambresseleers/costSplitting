@@ -21,8 +21,7 @@
               <tr>
                 <th>Item</th>
                 <th>Cost</th>
-                <th>Status</th>
-                <th style="width: 180px;">Actions</th>
+                <th style="width: 200px;">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -30,19 +29,20 @@
                 <tr>
                   <td><%= item.item %></td>
                   <td><%= formatCurrency(item.cost) %></td>
-                  <td><%= item.status.charAt(0).toUpperCase() + item.status.slice(1) %></td>
                   <td>
-                    <form action="/expenses/<%= item.id %>?_method=DELETE" method="POST" style="display:inline;">
-                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this expense?');">Delete</button>
-                    </form>
+                    <div class="d-flex gap-2">
+                      <form action="/expenses/<%= item.id %>?_method=DELETE" method="POST" style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this expense?');">Delete</button>
+                      </form>
 
-                    <a href="/expenses/<%= item.id %>/edit" class="btn btn-sm btn-primary mx-1">Edit</a>
+                      <a href="/expenses/<%= item.id %>/edit" class="btn btn-sm btn-primary">Edit</a>
 
-                    <form action="/expenses/<%= item.id %>/toggle-paid" method="POST" style="display:inline;">
-                      <button type="submit" class="btn btn-sm btn-secondary">
-                        <%= item.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid' %>
-                      </button>
-                    </form>
+                      <form action="/expenses/<%= item.id %>/toggle-paid" method="POST" style="margin:0;">
+                        <button type="submit" class="btn btn-sm btn-secondary">
+                          <%= item.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid' %>
+                        </button>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               <% }) %>
