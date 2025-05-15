@@ -1,55 +1,53 @@
 <%- include('partials/header') %>
+<h1>Expense Report</h1>
 
-  <head>
-    <link rel="stylesheet" href="/styles.css">
-  </head>
+<table border="1" cellpadding="5" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Person</th>
+      <th>Item</th>
+      <th>Cost</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% 
+      Object.keys(reportData).forEach(person => {
+        const data = reportData[person];
+        data.items.forEach(item => { 
+    %>
+      <tr>
+        <td><%= item.person %></td>
+        <td><%= item.item %></td>
+        <td><%= formatCurrency(item.cost) %></td>
+        <td><%= item.status.charAt(0).toUpperCase() + item.status.slice(1) %></td>
+        <td>
+          <!-- Delete -->
+          <form action="/expenses/<%= item.id %>?_method=DELETE" method="POST" style="display:inline">
+            <button type="submit" onclick="return confirm('Delete this expense?');">Delete</button>
+          </form>
 
-  <h2>Report - Unpaid Expenses</h2>
+          <!-- Edit -->
+          <a href="/expenses/<%= item.id %>/edit">Edit</a>
 
-  <% Object.keys(reportData).forEach(person=> { %>
-    <div class="person-section">
-      <div class="person-header">
-        <h3>
-          <%= person %>
-        </h3>
-        <form action="/mark-paid/<%= encodeURIComponent(person) %>" method="POST"
-          onsubmit="return confirm('Are you sure you want to mark all items for <%= person %> as paid?');">
-          <button type="submit">Mark All as Paid</button>
-        </form>
-      </div>
+          <!-- Toggle Paid -->
+          <form action="/expenses/<%= item.id %>/toggle-paid" method="POST" style="display:inline">
+            <button type="submit">
+              <%= item.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid' %>
+            </button>
+          </form>
+        </td>
+      </tr>
+    <% })}) %>
+  </tbody>
+</table>
 
-      <ul class="expenses-list">
-        <% reportData[person].items.forEach(item=> { %>
-          <li class="expense-item">
-            <span>
-              <%= item.item %> - <%= formatCurrency(item.cost) %>
-            </span>
+<h2>Totals by Person</h2>
+<ul>
+  <% Object.entries(reportData).forEach(([person, data]) => { %>
+    <li><strong><%= person %>:</strong> <%= data.totalFormatted %></li>
+  <% }) %>
+</ul>
 
-            <!-- Buttons Container -->
-            <div class="button-container">
-              <!-- Edit Button -->
-              <form action="/expenses/<%= item.id %>/edit" method="GET" style="display:inline;">
-                <button type="submit">Edit</button>
-              </form>
-
-              <!-- Delete Button -->
-              <form action="/expenses/<%= item.id %>" method="POST" style="display:inline;">
-                <input type="hidden" name="_method" value="DELETE">
-                <button type="submit">Delete</button>
-              </form>
-
-              <!-- Mark as Paid Button -->
-              <form action="/mark-paid/item/<%= item.id %>" method="POST" style="display:inline;">
-                <button type="submit">Mark as Paid</button>
-              </form>
-            </div>
-          </li>
-          <% }) %>
-      </ul>
-      <div><strong>Total: </strong>
-        <%= reportData[person].totalFormatted %>
-      </div>
-    </div>
-    <% }) %>
-
-      <%- include('partials/footer') %>
+<%- include('partials/footer') %>

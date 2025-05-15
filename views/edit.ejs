@@ -1,29 +1,18 @@
 <%- include('partials/header') %>
+<h1>Edit Expense</h1>
 
-<h2>Edit Expense</h2>
+<form action="/expenses/<%= expense.id %>" method="POST">
+  <label for="person">Person:</label><br />
+  <input type="text" id="person" name="person" value="<%= expense.person %>" required /><br /><br />
 
-<% if (typeof error !== 'undefined' && error) { %>
-    <p class="error">Error: <%= error %></p>
-<% } %>
+  <label for="item">Item:</label><br />
+  <input type="text" id="item" name="item" value="<%= expense.item %>" required /><br /><br />
 
+  <label for="cost">Cost (€):</label><br />
+  <input type="number" step="0.01" id="cost" name="cost" value="<%= expense.cost %>" required /><br /><br />
 
-<form action="/expenses/<%= expense.id %>?_method=PUT" method="POST">
-    <div>
-        <label for="person">Person:</label>
-        <input type="text" id="person" name="person" value="<%= expense.person %>" required>
-    </div>
-    <div>
-        <label for="item">Item:</label>
-        <input type="text" id="item" name="item" value="<%= expense.item %>" required>
-    </div>
-    <div>
-        <label for="cost">Cost (€):</label>
-        <input type="number" id="cost" name="cost" value="<%= expense.cost %>" step="0.01" required>
-    </div>
-    <div>
-        <button type="submit">Update Expense</button>
-        <a href="/report">Cancel</a> <%# Link back to the report page %>
-    </div>
+  <button type="submit">Save</button>
+  <a href="/report">Cancel</a>
 </form>
 
 <%- include('partials/footer') %>
