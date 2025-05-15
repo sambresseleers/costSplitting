@@ -177,6 +177,7 @@ app.get('/history', async (req, res) => {
         });
 
         const sortedHistory = Object.values(historyBatches).sort((a, b) => b.timestamp - a.timestamp);
+        const methodOverride = require('method-override');
 
         sortedHistory.forEach(batch => {
             batch.totalFormatted = formatCurrency(batch.total);
@@ -187,6 +188,19 @@ app.get('/history', async (req, res) => {
     } catch (error) {
         res.status(500).send('Error reading expense history.');
     }
+});
+
+// Delete expense
+app.delete('/expenses/:id', async (req, res) => {
+  const expenseId = req.params.id;
+  // Your logic to delete the expense
+  res.redirect('/report');
+});
+
+// Edit expense form
+app.get('/expenses/:id/edit', async (req, res) => {
+  const expenseId = req.params.id;
+  // Your logic to retrieve and render the edit form
 });
 
 // --- Start Server ---
