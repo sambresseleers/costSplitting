@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const crypto = require('crypto'); // For generating unique IDs
 const path = require('path');
@@ -20,6 +21,7 @@ app.set('views', path.join(__dirname, 'views')); // Specify views directory
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (form data)
 app.use(methodOverride('_method')); // Allow PUT/DELETE via query param ?_method=...
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files (like CSS)
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // --- Data Persistence Functions ---
 async function readExpenses() {
