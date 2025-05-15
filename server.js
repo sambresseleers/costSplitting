@@ -177,7 +177,6 @@ app.get('/history', async (req, res) => {
         });
 
         const sortedHistory = Object.values(historyBatches).sort((a, b) => b.timestamp - a.timestamp);
-        const methodOverride = require('method-override');
 
         sortedHistory.forEach(batch => {
             batch.totalFormatted = formatCurrency(batch.total);
